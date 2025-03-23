@@ -60,6 +60,12 @@ def delete_todo(todo_id: int):
     save_todos(todos)
     return {"message": "To-Do item deleted"}
 
+# To-Do 항목 전테 삭제
+@app.delete("/todos", response_model=dict)
+def clear_all_todos():
+    save_todos([])
+    return {"message": "All To-Do items deleted"}
+
 # HTML 파일 서빙
 @app.get("/", response_class=HTMLResponse)
 def read_root():

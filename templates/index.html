@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do List</title>
+    <style>
+        #clear_all_button {
+            background-color: rgb(196, 25, 25);
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #clear_all_button:hover {
+            background-color: rgb(136, 0, 0);
+        }
+    </style>
 </head>
 <body>
     <h1>To-Do List</h1>
@@ -13,19 +27,57 @@
         <input type="text" id="description" placeholder="Description" required>
         <button type="submit">Add To-Do</button>
     </form>
+    <button id="clear_all_button">Clear All</button>
     <script>
         async function fetchTodos() {
             const response = await fetch('/todos');
             const todos = await response.json();
             const todoList = document.getElementById('todo-list');
-            todoList.innerHTML = '';
+            todoList.innerHTML = ''; 
             todos.forEach(todo => {
                 const li = document.createElement('li');
                 li.textContent = `${todo.title}: ${todo.description}`;
+        
+                const delete_button = document.createElement('button');
+                delete_button.textContent = 'Delete';
+                delete_button.addEventListener('click', async () => {
+                    const response = await fetch(`/todos/${todo.id}`, {
+                    method: 'DELETE',
+                    });
+                    if (response.ok) {
+                        fetchTodos();
+                    }
+                });
+
+                const edit_button = document.createElement('button');
+                edit_button.textContent = 'Edit';
+                edit_button.addEventListener('click', () => {
+                    const newTitle = prompt('Edit title:', todo.title);
+                    const newDescription = prompt('Edit description:', todo.description);
+            
+                    if (newTitle && newDescription) {
+                        fetch(`/todos/${todo.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id: todo.id,
+                                title: newTitle,
+                                description: newDescription,
+                                completed: todo.completed
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(() => fetchTodos());
+                    }
+                });
+
+                li.appendChild(delete_button);
+                li.appendChild(edit_button);
                 todoList.appendChild(li);
             });
         }
-
         document.getElementById('todo-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const title = document.getElementById('title').value;
@@ -36,6 +88,18 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ id: Date.now(), title, description, completed: false })
+            });
+            if (response.ok) {
+                fetchTodos();
+            }
+        });
+
+        document.getElementById('clear_all_button').addEventListener('click', async () => {
+            const response = await fetch('/todos', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
             if (response.ok) {
                 fetchTodos();
