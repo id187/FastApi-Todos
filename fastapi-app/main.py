@@ -60,7 +60,7 @@ def delete_todo(todo_id: int):
     save_todos(todos)
     return {"message": "To-Do item deleted"}
 
-# To-Do 항목 전테 삭제
+# To-Do 항목 전체 삭제
 @app.delete("/todos", response_model=dict)
 def clear_all_todos():
     save_todos([])
