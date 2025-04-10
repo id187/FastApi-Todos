@@ -14,8 +14,14 @@
             cursor: pointer;
             margin-top: 20px;
         }
+
         #clear_all_button:hover {
             background-color: rgb(136, 0, 0);
+        }
+
+        .completed {
+            color: gray;
+            text-decoration: line-through;
         }
     </style>
 </head>
@@ -28,13 +34,14 @@
         <button type="submit">Add To-Do</button>
     </form>
     <button id="clear_all_button">Clear All</button>
+
     <script>
         async function fetchTodos() {
             const response = await fetch('/todos');
             const todos = await response.json();
             const todoList = document.getElementById('todo-list');
             todoList.innerHTML = ''; 
-    
+
             todos.forEach(todo => {
                 const li = document.createElement('li');
 
@@ -59,16 +66,13 @@
                 const text = document.createElement('span');
                 text.textContent = ` ${todo.title}: ${todo.description} `;
                 if (todo.completed) {
-                    text.style.color = 'gray';
-                    text.style.textDecoration = 'line-through';
+                    text.classList.add('completed');
                 }
 
                 const delete_button = document.createElement('button');
                 delete_button.textContent = 'Delete';
                 delete_button.addEventListener('click', async () => {
-                    const response = await fetch(`/todos/${todo.id}`, {
-                        method: 'DELETE'
-                    });
+                    const response = await fetch(`/todos/${todo.id}`, { method: 'DELETE' });
                     if (response.ok) fetchTodos();
                 });
 
@@ -77,13 +81,10 @@
                 edit_button.addEventListener('click', () => {
                     const newTitle = prompt('Edit title:', todo.title);
                     const newDescription = prompt('Edit description:', todo.description);
-
                     if (newTitle && newDescription) {
                         fetch(`/todos/${todo.id}`, {
                             method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 id: todo.id,
                                 title: newTitle,
@@ -91,8 +92,29 @@
                                 completed: todo.completed
                             })
                         })
-                     .then(response => response.json())
+                        .then(response => response.json())
                         .then(() => fetchTodos());
+                    }
+                });
+
+                const duplicate_button = document.createElement('button');
+                duplicate_button.textContent = 'Duplicate';
+                duplicate_button.addEventListener('click', async () => {
+                    const count = parseInt(prompt('How much?', '1'), 10);
+                    if (!isNaN(count) && count > 0) {
+                        for (let i = 0; i < count; i++) {
+                            await fetch('/todos', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    id: Date.now() + i,
+                                    title: todo.title,
+                                    description: todo.description,
+                                    completed: false
+                                })
+                            });
+                        }
+                        fetchTodos();
                     }
                 });
 
@@ -100,9 +122,11 @@
                 li.appendChild(text);
                 li.appendChild(delete_button);
                 li.appendChild(edit_button);
+                li.appendChild(duplicate_button);
                 todoList.appendChild(li);
             });
         }
+
         document.getElementById('todo-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const title = document.getElementById('title').value;
@@ -112,11 +136,14 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ id: Date.now(), title, description, completed: false })
+                body: JSON.stringify({
+                    id: Date.now(),
+                    title,
+                    description,
+                    completed: false
+                })
             });
-            if (response.ok) {
-                fetchTodos();
-            }
+            if (response.ok) fetchTodos();
         });
 
         document.getElementById('clear_all_button').addEventListener('click', async () => {
@@ -126,9 +153,7 @@
                     'Content-Type': 'application/json'
                 }
             });
-            if (response.ok) {
-                fetchTodos();
-            }
+            if (response.ok) fetchTodos();
         });
 
         fetchTodos();
