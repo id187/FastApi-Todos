@@ -10,11 +10,11 @@ COPY todo.json .
 COPY templates/ ./templates/
 COPY tests/ ./tests/
 
-# 의존성 설치
-RUN pip install --no-cache-dir -r requirements.txt
+# 의존성 설치 및 비root 사용자 생성
+RUN pip install --no-cache-dir -r requirements.txt && \
+    adduser --disabled-password --gecos '' appuser
 
-# 비root 사용자 생성 및 권한 설정
-RUN adduser --disabled-password --gecos '' appuser
+# 비root 사용자로 실행
 USER appuser
 
 # FastAPI 서버 실행
