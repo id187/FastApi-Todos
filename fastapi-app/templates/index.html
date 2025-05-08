@@ -6,7 +6,7 @@
     <title>To-Do List</title>
     <style>
         #clear_all_button {
-            background-color: rgb(196, 25, 25);
+            background-color: rgb(195, 25, 25);
             color: white;
             padding: 10px 20px;
             font-size: 16px;
@@ -16,7 +16,22 @@
         }
 
         #clear_all_button:hover {
-            background-color: rgb(136, 0, 0);
+            background-color: rgb(135, 0, 0);
+        }
+
+        #clear_completed_button {
+        background-color: rgb(80, 160, 240);
+        color: white;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+        margin-left: 10px;
+        }   
+
+        #clear_completed_button:hover {
+            background-color: rgb(20, 100, 180);
         }
 
         .completed {
@@ -34,6 +49,7 @@
         <button type="submit">Add To-Do</button>
     </form>
     <button id="clear_all_button">Clear All</button>
+    <button id="clear_completed_button">Clear Completed</button>
 
     <script>
         async function fetchTodos() {
@@ -154,6 +170,18 @@
                 }
             });
             if (response.ok) fetchTodos();
+        });
+
+        document.getElementById('clear_completed_button').addEventListener('click', async () => {
+            const response = await fetch('/todos');
+            if (response.ok) {
+                const todos = await response.json();
+                const completed = todos.filter(todo => todo.completed);
+                for (const todo of completed) {
+                    await fetch(`/todos/${todo.id}`, { method: 'DELETE' });
+                }
+                fetchTodos();
+            }
         });
 
         fetchTodos();

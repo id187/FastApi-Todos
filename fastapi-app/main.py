@@ -45,9 +45,15 @@ def create_todo(todo: TodoItem):
 @app.put("/todos/{todo_id}", response_model=TodoItem)
 def update_todo(todo_id: int, updated_todo: TodoItem):
     todos = load_todos()
-    for todo in todos:
+    for i, todo in enumerate(todos):
         if todo["id"] == todo_id:
+            was_completed = todo["completed"]
             todo.update(updated_todo.dict())
+
+            if not was_completed and updated_todo.completed:
+                moved = todos.pop(i)
+                todos.insert(0, moved)
+
             save_todos(todos)
             return updated_todo
     raise HTTPException(status_code=404, detail="To-Do item not found")
