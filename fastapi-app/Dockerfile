@@ -9,6 +9,7 @@ COPY main.py .
 COPY todo.json .
 COPY templates/ ./templates/
 COPY tests/ ./tests/
+COPY prometheus/ ./prometheus/
 
 # 의존성 설치 및 비root 사용자 생성
 RUN pip install --no-cache-dir -r requirements.txt && \
