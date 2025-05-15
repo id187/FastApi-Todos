@@ -58,6 +58,10 @@ def update_todo(todo_id: int, updated_todo: TodoItem):
                 moved = todos.pop(i)
                 todos.insert(0, moved)
 
+            elif was_completed and not updated_todo.completed:
+                moved = todos.pop(i)
+                todos.append(moved)
+
             save_todos(todos)
             return updated_todo
     raise HTTPException(status_code=404, detail="To-Do item not found")
@@ -79,6 +83,6 @@ def clear_all_todos():
 # HTML 파일 서빙
 @app.get("/", response_class=HTMLResponse)
 def read_root():
-    with open("templates/index.html", "r") as file:
+    with open("templates/index.html", "r", encoding="utf-8") as file:
         content = file.read()
     return HTMLResponse(content=content)

@@ -38,6 +38,20 @@
             color: gray;
             text-decoration: line-through;
         }
+        .todo-title {
+            display: inline-block;
+            width: 120px;
+            text-align: left;
+        }
+        .todo-description {
+            display: inline-block;
+            width: 180px;
+            vertical-align: middle;
+            position: relative;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -79,11 +93,26 @@
                     fetchTodos();
                 });
 
-                const text = document.createElement('span');
-                text.textContent = ` ${todo.title}: ${todo.description} `;
+                const textWrapper = document.createElement('span');
+                textWrapper.classList.add('todo-text');
+
+                const titleSpan = document.createElement('span');
+                titleSpan.classList.add('todo-title');
+                titleSpan.textContent = todo.title;
+
+                const descSpan = document.createElement('span');
+                descSpan.classList.add('todo-description');
+                descSpan.textContent = todo.description;
+
                 if (todo.completed) {
-                    text.classList.add('completed');
+                    titleSpan.classList.add('completed');
+                    descSpan.classList.add('completed');
                 }
+
+                textWrapper.appendChild(titleSpan);
+                const colon = document.createTextNode(' : ');
+                textWrapper.appendChild(colon);
+                textWrapper.appendChild(descSpan);
 
                 const delete_button = document.createElement('button');
                 delete_button.textContent = 'Delete';
@@ -133,12 +162,14 @@
                         fetchTodos();
                     }
                 });
-
+                
                 li.appendChild(checkbox);
-                li.appendChild(text);
+                li.appendChild(textWrapper);
                 li.appendChild(delete_button);
-                li.appendChild(edit_button);
-                li.appendChild(duplicate_button);
+                if (!todo.completed) {
+                    li.appendChild(edit_button);
+                    li.appendChild(duplicate_button);
+                }
                 todoList.appendChild(li);
             });
         }
