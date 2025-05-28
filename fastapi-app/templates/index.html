@@ -20,15 +20,15 @@
         }
 
         #clear_completed_button {
-        background-color: rgb(80, 160, 240);
-        color: white;
-        padding: 10px 20px;
-        font-size: 16px;
-        border: none;
-        cursor: pointer;
-        margin-top: 20px;
-        margin-left: 10px;
-        }   
+            background-color: rgb(80, 160, 240);
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-left: 10px;
+        }
 
         #clear_completed_button:hover {
             background-color: rgb(20, 100, 180);
@@ -62,6 +62,16 @@
         <input type="text" id="description" placeholder="Description" required>
         <button type="submit">Add To-Do</button>
     </form>
+
+    <div id="progress-container" style="position: absolute; top: 20px; right: 800px; text-align: center;">
+        <svg width="100" height="100">
+            <circle cx="50" cy="50" r="40" stroke="rgb(195, 25, 25)" stroke-width="10" fill="none" />
+            <circle id="progress-circle" cx="50" cy="50" r="40" stroke="rgb(80, 160, 240)" stroke-width="10" fill="none"
+                stroke-dasharray="251.2" stroke-dashoffset="251.2" transform="rotate(-90 50 50)" />
+        </svg>
+        <div id="progress-labels" style="margin-top: 8px; font-size: 14px;"></div>
+    </div>
+
     <button id="clear_all_button">Clear All</button>
     <button id="clear_completed_button">Clear Completed</button>
 
@@ -70,7 +80,7 @@
             const response = await fetch('/todos');
             const todos = await response.json();
             const todoList = document.getElementById('todo-list');
-            todoList.innerHTML = ''; 
+            todoList.innerHTML = '';
 
             todos.forEach(todo => {
                 const li = document.createElement('li');
@@ -162,7 +172,7 @@
                         fetchTodos();
                     }
                 });
-                
+
                 li.appendChild(checkbox);
                 li.appendChild(textWrapper);
                 li.appendChild(delete_button);
@@ -172,6 +182,8 @@
                 }
                 todoList.appendChild(li);
             });
+
+            updateProgress(todos);
         }
 
         document.getElementById('todo-form').addEventListener('submit', async (event) => {
@@ -214,6 +226,20 @@
                 fetchTodos();
             }
         });
+
+        function updateProgress(todos) {
+            const completedCount = todos.filter(todo => todo.completed).length;
+            const total = todos.length;
+            const percentage = total ? Math.round((completedCount / total) * 100) : 0;
+
+            const circle = document.getElementById('progress-circle');
+            const circumference = 2 * Math.PI * 40;
+            const offset = circumference * (1 - (percentage / 100));
+            circle.style.strokeDashoffset = offset;
+
+            const labels = document.getElementById('progress-labels');
+            labels.innerHTML = `완료: ${completedCount} (${percentage}%)<br>미완료: ${total - completedCount} (${100 - percentage}%)`;
+        }
 
         fetchTodos();
     </script>
