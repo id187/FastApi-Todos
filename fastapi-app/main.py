@@ -45,6 +45,8 @@ async def log_requests(request: Request, call_next):
 
     return response
 
+app.middleware("http")(log_requests)
+
 # To-Do 항목 모델
 class TodoItem(BaseModel):
     id: int
