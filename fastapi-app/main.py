@@ -107,8 +107,19 @@ def update_todo(todo_id: int, updated_todo: TodoItem):
 @app.delete("/todos/{todo_id}", response_model=dict)
 def delete_todo(todo_id: int):
     todos = load_todos()
-    todos = [todo for todo in todos if todo["id"] != todo_id]
-    save_todos(todos)
+    new_todos = []
+    notdos = load_notdos()
+
+    for todo in todos:
+        if todo["id"] == todo_id:
+            if not todo["completed"]:
+                notdos.append(todo)
+            continue
+        new_todos.append(todo)
+
+    save_todos(new_todos)
+    save_notdos(notdos)
+
     return {"message": "To-Do item deleted"}
 
 # To-Do 항목 전체 삭제
@@ -123,3 +134,19 @@ def read_root():
     with open("templates/index.html", "r", encoding="utf-8") as file:
         content = file.read()
     return HTMLResponse(content=content)
+
+@app.get("/notdos", response_model=list[TodoItem])
+def get_notdos():
+    return load_notdos()
+
+NOTDO_FILE = "notdo.json"
+
+def load_notdos():
+    if os.path.exists(NOTDO_FILE):
+        with open(NOTDO_FILE, "r") as file:
+            return json.load(file)
+    return []
+
+def save_notdos(notdos):
+    with open(NOTDO_FILE, "w") as file:
+        json.dump(notdos, file, indent=4)

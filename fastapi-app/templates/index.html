@@ -52,6 +52,19 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        #toggle_notdo_button {
+            background-color: rgb(120, 120, 120);
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-left: 10px;
+        }
+        #toggle_notdo_button:hover {
+            background-color: rgb(70, 70, 70);
+        }
     </style>
 </head>
 <body>
@@ -74,6 +87,8 @@
 
     <button id="clear_all_button">Clear All</button>
     <button id="clear_completed_button">Clear Completed</button>
+    <button id="toggle_notdo_button">Not Do List (N)</button>
+    <ul id="notdo-list" style="display: none; margin-top: 20px;"></ul>
 
     <script>
         async function fetchTodos() {
@@ -128,7 +143,7 @@
                 delete_button.textContent = 'Delete';
                 delete_button.addEventListener('click', async () => {
                     const response = await fetch(`/todos/${todo.id}`, { method: 'DELETE' });
-                    if (response.ok) fetchTodos();
+                    if (response.ok) {fetchTodos(); updateNotDoButtonCount();}
                 });
 
                 const edit_button = document.createElement('button');
@@ -241,7 +256,50 @@
             labels.innerHTML = `완료: ${completedCount} (${percentage}%)<br>미완료: ${total - completedCount} (${100 - percentage}%)`;
         }
 
+
+        async function updateNotDoButtonCount() {
+            const res = await fetch('/notdos');
+            const notdos = await res.json();
+            const button = document.getElementById('toggle_notdo_button');
+            button.textContent = `Not Do List (${notdos.length})`;
+        }
+        const toggleBtn = document.getElementById('toggle_notdo_button');
+        const notdoList = document.getElementById('notdo-list');
+
+        toggleBtn.addEventListener('click', async () => {
+            if (notdoList.style.display === 'none') {
+                const res = await fetch('/notdos');
+                const notdos = await res.json();
+                toggleBtn.textContent = `Not Do List (${notdos.length})`;
+
+                notdoList.innerHTML = '';
+                notdos.forEach(todo => {
+                    const li = document.createElement('li');
+
+                    const titleSpan = document.createElement('span');
+                    titleSpan.classList.add('todo-title', 'completed');
+                    titleSpan.textContent = todo.title;
+
+                    const descSpan = document.createElement('span');
+                    descSpan.classList.add('todo-description', 'completed');
+                    descSpan.textContent = todo.description;
+
+                    li.appendChild(titleSpan);
+                    const colon = document.createTextNode(' : ');
+                    li.appendChild(colon);
+                    li.appendChild(descSpan);
+
+                    notdoList.appendChild(li);
+                });
+
+                notdoList.style.display = 'block';
+            } else {
+                notdoList.style.display = 'none';
+            }
+            });
         fetchTodos();
+        updateNotDoButtonCount();
+        
     </script>
 </body>
 </html>
