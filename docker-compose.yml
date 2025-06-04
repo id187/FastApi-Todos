@@ -84,3 +84,7 @@ volumes:
   sonarqube_logs:
   sonarqube_extensions:
   grafana-data:
+
+networks:
+  loadtest-net:
+    driver: bridge
